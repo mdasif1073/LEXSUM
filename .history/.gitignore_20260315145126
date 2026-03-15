@@ -1,0 +1,6 @@
+.env
+backend/.env
+backend/venv/
+build/
+.dart_tool/
+*.log

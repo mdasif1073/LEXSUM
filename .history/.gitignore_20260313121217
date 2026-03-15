@@ -1,0 +1,9 @@
+/build/
+.DS_Store
+**/*.apk
+**/*.so
+
+# Secrets
+.env
+backend/.env
+*.log
