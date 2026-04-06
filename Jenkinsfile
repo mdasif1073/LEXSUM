@@ -13,7 +13,7 @@ pipeline {
 
     environment {
         VIRTUAL_ENV = 'venv'
-        PYTHON_VERSION = '3.11'
+        PYTHON_CMD = 'python3.11'
         FLUTTER_VERSION = '3.10'
         ARTIFACT_DIR = 'artifacts'
         PROJECT_NAME = 'LEXSUM'
@@ -54,7 +54,17 @@ pipeline {
                 echo "════════════════════════════════════════════════════════"
                 sh '''
                     cd backend
-                    python3 -m venv ${VIRTUAL_ENV}
+                                        if command -v ${PYTHON_CMD} >/dev/null 2>&1; then
+                                            PY_CMD=${PYTHON_CMD}
+                                        elif command -v python3.10 >/dev/null 2>&1; then
+                                            PY_CMD=python3.10
+                                        else
+                                            PY_CMD=python3
+                                        fi
+
+                                        echo "Using Python interpreter: ${PY_CMD}"
+                                        ${PY_CMD} --version
+                                        ${PY_CMD} -m venv ${VIRTUAL_ENV}
                     source ${VIRTUAL_ENV}/bin/activate
                     pip install --upgrade pip setuptools wheel
                     pip install -e .
@@ -342,7 +352,7 @@ pipeline {
                 
                 cat ${ARTIFACT_DIR}/reports/pipeline-info.txt
             '''
-            cleanWs()
+            deleteDir()
         }
         success {
             echo "════════════════════════════════════════════════════════"
