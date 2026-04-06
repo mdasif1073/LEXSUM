@@ -14,6 +14,7 @@ pipeline {
     environment {
         VIRTUAL_ENV = 'venv'
         PYTHON_CMD = 'python3.11'
+        FLUTTER_CMD = '/Users/mohamedasifa/flutter/bin/flutter'
         FLUTTER_VERSION = '3.10'
         ARTIFACT_DIR = 'artifacts'
         PROJECT_NAME = 'LEXSUM'
@@ -97,14 +98,18 @@ pipeline {
                     # Jenkins on macOS may not include Homebrew paths by default.
                     export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-                    if ! command -v flutter >/dev/null 2>&1; then
-                        echo "❌ Flutter SDK not found in PATH for Jenkins user"
-                        echo "Install Flutter and/or add it to Jenkins PATH, then restart Jenkins"
+                    if [ -x "${FLUTTER_CMD}" ]; then
+                        FLUTTER="${FLUTTER_CMD}"
+                    elif command -v flutter >/dev/null 2>&1; then
+                        FLUTTER="$(command -v flutter)"
+                    else
+                        echo "❌ Flutter SDK not found for Jenkins user"
+                        echo "Set FLUTTER_CMD in Jenkinsfile to absolute flutter binary path"
                         exit 1
                     fi
 
                     echo "Flutter Version:"
-                    flutter --version
+                    "${FLUTTER}" --version
                     echo ""
                     echo "Dart Version:"
                     if command -v dart >/dev/null 2>&1; then
@@ -114,10 +119,10 @@ pipeline {
                     fi
                     echo ""
                     echo "Getting dependencies..."
-                    flutter pub get
+                    "${FLUTTER}" pub get
                     echo ""
                     echo "Checking Flutter environment:"
-                    flutter doctor -v || true
+                    "${FLUTTER}" doctor -v || true
                     echo "✅ Frontend environment ready"
                 '''
             }
@@ -182,7 +187,7 @@ pipeline {
                 echo "STAGE 6: TESTING - Flutter widget tests"
                 echo "════════════════════════════════════════════════════════"
                 sh '''
-                    flutter test --coverage || true
+                    "${FLUTTER_CMD}" test --coverage || true
                     genhtml coverage/lcov.info --output-directory coverage/html || echo "⚠️ genhtml not available"
                     echo "✅ Frontend tests complete"
                 '''
@@ -207,7 +212,7 @@ pipeline {
                 echo "STAGE 7: CODE ANALYSIS - Flutter static analysis"
                 echo "════════════════════════════════════════════════════════"
                 sh '''
-                    flutter analyze --no-pub || true
+                    "${FLUTTER_CMD}" analyze --no-pub || true
                     echo "✅ Flutter analysis complete"
                 '''
             }
@@ -238,7 +243,7 @@ pipeline {
                 echo "STAGE 9: BUILD - Creating Flutter APK release"
                 echo "════════════════════════════════════════════════════════"
                 sh '''
-                    flutter build apk --release --verbose || true
+                    "${FLUTTER_CMD}" build apk --release --verbose || true
                     
                     mkdir -p ${ARTIFACT_DIR}/flutter
                     if [ -f build/app/outputs/flutter-apk/app-release.apk ]; then
@@ -271,7 +276,7 @@ pipeline {
                     
                     echo ""
                     echo "Scanning Dart/Flutter dependencies..."
-                    flutter pub outdated || true
+                    "${FLUTTER_CMD}" pub outdated || true
                     
                     echo "✅ Security scanning complete"
                 '''
