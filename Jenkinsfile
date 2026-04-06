@@ -54,16 +54,30 @@ pipeline {
                 echo "════════════════════════════════════════════════════════"
                 sh '''
                     cd backend
+                                        # Jenkins on macOS often has a minimal PATH; include common Homebrew paths.
+                                        export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
                                         if command -v ${PYTHON_CMD} >/dev/null 2>&1; then
-                                            PY_CMD=${PYTHON_CMD}
+                                            PY_CMD="$(command -v ${PYTHON_CMD})"
                                         elif command -v python3.10 >/dev/null 2>&1; then
-                                            PY_CMD=python3.10
+                                            PY_CMD="$(command -v python3.10)"
+                                        elif [ -x /Users/mohamedasifa/Desktop/LEXSUM/backend_venv_backup/bin/python ]; then
+                                            PY_CMD=/Users/mohamedasifa/Desktop/LEXSUM/backend_venv_backup/bin/python
                                         else
-                                            PY_CMD=python3
+                                            echo "❌ Python >=3.10 not found in Jenkins PATH."
+                                            echo "Install with: brew install python@3.11"
+                                            echo "Then restart Jenkins so PATH is refreshed."
+                                            exit 1
                                         fi
 
                                         echo "Using Python interpreter: ${PY_CMD}"
                                         ${PY_CMD} --version
+                                        PY_MINOR="$(${PY_CMD} -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+                                        if [ "$(printf '%s\n' "3.10" "${PY_MINOR}" | sort -V | head -n1)" != "3.10" ]; then
+                                            echo "❌ Selected Python is ${PY_MINOR}, but backend requires >=3.10"
+                                            exit 1
+                                        fi
+
                                         ${PY_CMD} -m venv ${VIRTUAL_ENV}
                     source ${VIRTUAL_ENV}/bin/activate
                     pip install --upgrade pip setuptools wheel
