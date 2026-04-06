@@ -94,11 +94,24 @@ pipeline {
                 echo "STAGE 3: FRONTEND SETUP - Configuring Flutter"
                 echo "════════════════════════════════════════════════════════"
                 sh '''
+                    # Jenkins on macOS may not include Homebrew paths by default.
+                    export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+                    if ! command -v flutter >/dev/null 2>&1; then
+                        echo "❌ Flutter SDK not found in PATH for Jenkins user"
+                        echo "Install Flutter and/or add it to Jenkins PATH, then restart Jenkins"
+                        exit 1
+                    fi
+
                     echo "Flutter Version:"
                     flutter --version
                     echo ""
                     echo "Dart Version:"
-                    dart --version
+                    if command -v dart >/dev/null 2>&1; then
+                        dart --version
+                    else
+                        echo "⚠️ Dart command not found (Flutter still detected)"
+                    fi
                     echo ""
                     echo "Getting dependencies..."
                     flutter pub get
