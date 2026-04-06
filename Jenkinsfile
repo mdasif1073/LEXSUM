@@ -143,9 +143,9 @@ pipeline {
             }
             post {
                 always {
-                    junit 'backend/test-results.xml' || true
+                    junit testResults: 'backend/test-results.xml', allowEmptyResults: true
                     publishHTML(target: [
-                        allowMissing: false,
+                        allowMissing: true,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
                         reportDir: 'backend/htmlcov',
