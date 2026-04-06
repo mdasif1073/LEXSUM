@@ -1,0 +1,180 @@
+# Prometheus Configuration for LEXSUM Classroom Application
+# Purpose: Monitoring infrastructure for collecting metrics and alerting
+# Documentation: https://prometheus.io/docs/prometheus/latest/configuration/configuration/
+
+global:
+  scrape_interval: 15s          # How often to scrape targets by default
+  evaluation_interval: 15s       # How often to evaluate rules
+  external_labels:
+    monitor: 'lexsum-monitor'    # Label for this Prometheus instance
+    environment: 'development'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # Configure AlertManager if needed
+          #- localhost:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alert_rules.yml'
+  - 'recording_rules.yml'
+
+# Scrape configurations define which targets to monitor
+scrape_configs:
+
+  # ============================================================
+  # PROMETHEUS SELF-MONITORING
+  # ============================================================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    labels:
+      service: 'prometheus'
+      component: 'monitoring'
+
+  # ============================================================
+  # BACKEND API MONITORING
+  # ============================================================
+  - job_name: 'classroom-backend'
+    static_configs:
+      - targets: ['localhost:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    labels:
+      service: 'backend'
+      component: 'api'
+      application: 'LEXSUM'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+      - source_labels: [__scheme__]
+        target_label: scheme
+
+  # ============================================================
+  # DATABASE MONITORING (PostgreSQL)
+  # ============================================================
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['localhost:9187']
+    scrape_interval: 30s
+    labels:
+      service: 'database'
+      component: 'postgresql'
+      application: 'LEXSUM'
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: 'pg_.*'
+        action: keep
+
+  # ============================================================
+  # REDIS MONITORING
+  # ============================================================
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+    scrape_interval: 30s
+    labels:
+      service: 'cache'
+      component: 'redis'
+      application: 'LEXSUM'
+
+  # ============================================================
+  # NODE EXPORTER (System Metrics)
+  # ============================================================
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 15s
+    labels:
+      service: 'system'
+      component: 'node'
+      application: 'LEXSUM'
+
+  # ============================================================
+  # DOCKER STATS (if applicable)
+  # ============================================================
+  # - job_name: 'docker'
+  #   static_configs:
+  #     - targets: ['localhost:9323']
+  #   scrape_interval: 15s
+  #   labels:
+  #     service: 'containers'
+
+  # ============================================================
+  # NGINX MONITORING (if using reverse proxy)
+  # ============================================================
+  # - job_name: 'nginx'
+  #   static_configs:
+  #     - targets: ['localhost:8888/metrics']
+  #   scrape_interval: 15s
+  #   labels:
+  #     service: 'webserver'
+
+  # ============================================================
+  # BLACK BOX EXPORTER (for endpoint monitoring)
+  # ============================================================
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - 'http://localhost:8000/health'
+          - 'http://localhost:8000/api/v1/subjects'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'localhost:9115'
+    scrape_interval: 30s
+    labels:
+      service: 'endpoint-monitoring'
+      application: 'LEXSUM'
+
+  # ============================================================
+  # CUSTOM APPLICATION METRICS
+  # ============================================================
+  - job_name: 'classroom-metrics'
+    static_configs:
+      - targets: ['localhost:8000/metrics']
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    labels:
+      service: 'application'
+      component: 'custom-metrics'
+      application: 'LEXSUM'
+    metric_relabel_configs:
+      # Keep only application-specific metrics
+      - source_labels: [__name__]
+        regex: 'classroom_.*|app_.*'
+        action: keep
+
+# ============================================================
+# REMOTE STORAGE (Optional)
+# ============================================================
+# For long-term storage, you can configure remote storage:
+# remote_write:
+#   - url: 'http://localhost:9009/api/v1/push'
+#     queue_config:
+#       max_shards: 1000
+#       min_shards: 1
+#       max_samples_per_send: 500
+#       batch_send_wait: 5s
+#       min_retry_delay: 30ms
+#       max_retry_delay: 100ms
+
+# ============================================================
+# SERVICE DISCOVERY (Optional)
+# ============================================================
+# For dynamic service discovery:
+# consul_sd_configs:
+#   - server: 'localhost:8500'
+#     datacenter: 'dc1'
+#       services: ['classroom-api', 'classroom-worker']

@@ -82,7 +82,9 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                   title: "Processing…",
                   subtitle: "This lecture is not ready yet.",
                   showRefresh: true,
-                  onRefresh: () => ref.invalidate(lectureDetailOutProvider(widget.lecture.id)),
+                  onRefresh: () => ref.invalidate(
+                    lectureDetailOutProvider(widget.lecture.id),
+                  ),
                 ),
               );
             }
@@ -109,12 +111,10 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
                         photosRefreshTick: _photosRefreshTick,
                       )
                     : _tab == 1
-                        ? _SummaryTab(
-                            summaryMd: detail.summaryMd ?? "",
-                          )
-                        : isTeacher
-                            ? _TeacherQuizStatsTab(lectureId: widget.lecture.id)
-                            : _QuizTab(lectureId: widget.lecture.id),
+                    ? _SummaryTab(summaryMd: detail.summaryMd ?? "")
+                    : isTeacher
+                    ? _TeacherQuizStatsTab(lectureId: widget.lecture.id)
+                    : _QuizTab(lectureId: widget.lecture.id),
               ),
               footer: _tab == 0
                   ? _AddNotesFooter(
@@ -151,14 +151,14 @@ class _LectureScreenState extends ConsumerState<LectureScreen> {
       await ref.read(apiProvider).addNotePhoto(widget.lecture.id, filePath);
       if (!mounted) return;
       setState(() => _photosRefreshTick++);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Photo "$fileName" uploaded')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Photo "$fileName" uploaded')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Photo upload failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Photo upload failed: $e')));
     }
   }
 }
@@ -215,10 +215,7 @@ class _TopBar extends StatelessWidget {
   final String title;
   final VoidCallback onBack;
 
-  const _TopBar({
-    required this.title,
-    required this.onBack,
-  });
+  const _TopBar({required this.title, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -262,8 +259,10 @@ class _HeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dt = lectureAt.toLocal();
-    final date = "${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}";
-    final time = "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+    final date =
+        "${dt.day.toString().padLeft(2, '0')}-${dt.month.toString().padLeft(2, '0')}-${dt.year}";
+    final time =
+        "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -289,11 +288,18 @@ class _HeaderCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppTheme.primary.withOpacity(0.25), AppTheme.primary.withOpacity(0.06)],
+                  colors: [
+                    AppTheme.primary.withOpacity(0.25),
+                    AppTheme.primary.withOpacity(0.06),
+                  ],
                 ),
               ),
               child: Center(
-                child: Icon(Icons.memory_rounded, size: 56, color: AppTheme.primary.withOpacity(0.35)),
+                child: Icon(
+                  Icons.memory_rounded,
+                  size: 56,
+                  color: AppTheme.primary.withOpacity(0.35),
+                ),
               ),
             ),
             Padding(
@@ -303,7 +309,10 @@ class _HeaderCard extends StatelessWidget {
                 children: [
                   const Text(
                     "Lecture Overview",
-                    style: TextStyle(color: Color(0xFF656487), fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      color: Color(0xFF656487),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -320,7 +329,10 @@ class _HeaderCard extends StatelessWidget {
                     children: [
                       Text(
                         "$date • $time",
-                        style: const TextStyle(color: Color(0xFF656487), fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          color: Color(0xFF656487),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const Spacer(),
                       _StatusChip(status: status),
@@ -368,10 +380,18 @@ class _StatusChip extends StatelessWidget {
     final label = status.name[0].toUpperCase() + status.name.substring(1);
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
       child: Text(
         label,
-        style: TextStyle(color: fg, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+        style: TextStyle(
+          color: fg,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.0,
+        ),
       ),
     );
 
@@ -419,13 +439,21 @@ class _ProcessingBody extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF121117)),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF121117),
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(color: Color(0xFF67608A), fontWeight: FontWeight.w600, height: 1.35),
+            style: const TextStyle(
+              color: Color(0xFF67608A),
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
             textAlign: TextAlign.center,
           ),
           if (showRefresh) ...[
@@ -435,10 +463,15 @@ class _ProcessingBody extends StatelessWidget {
               child: OutlinedButton.icon(
                 onPressed: onRefresh,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text("Refresh status", style: TextStyle(fontWeight: FontWeight.w900)),
+                label: const Text(
+                  "Refresh status",
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   side: const BorderSide(color: Color(0xFFE2E2EC)),
                   foregroundColor: const Color(0xFF121117),
                   backgroundColor: Colors.white,
@@ -464,7 +497,10 @@ class _ErrorBody extends StatelessWidget {
         child: Text(
           message,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF67608A), fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            color: Color(0xFF67608A),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -494,8 +530,16 @@ class _SegmentedTabs extends StatelessWidget {
       ),
       child: Row(
         children: [
-          _SegItem(label: "Notes", selected: value == 0, onTap: () => onChanged(0)),
-          _SegItem(label: "Summary", selected: value == 1, onTap: () => onChanged(1)),
+          _SegItem(
+            label: "Notes",
+            selected: value == 0,
+            onTap: () => onChanged(0),
+          ),
+          _SegItem(
+            label: "Summary",
+            selected: value == 1,
+            onTap: () => onChanged(1),
+          ),
           _SegItem(
             label: isTeacher ? "Quiz Stats" : "Quiz",
             selected: value == 2,
@@ -512,7 +556,11 @@ class _SegItem extends StatelessWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _SegItem({required this.label, required this.selected, required this.onTap});
+  const _SegItem({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +579,7 @@ class _SegItem extends StatelessWidget {
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
-                    )
+                    ),
                   ]
                 : null,
           ),
@@ -635,7 +683,9 @@ class _NotesTab extends ConsumerWidget {
                                     child: Image.network(
                                       url,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => const Center(child: Icon(Icons.broken_image)),
+                                      errorBuilder: (_, _, _) => const Center(
+                                        child: Icon(Icons.broken_image),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -647,15 +697,24 @@ class _NotesTab extends ConsumerWidget {
                                 Expanded(
                                   child: Text(
                                     by.isEmpty ? "By: Unknown" : "By: $by",
-                                    style: const TextStyle(fontSize: 12, color: Color(0xFF656487)),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF656487),
+                                    ),
                                   ),
                                 ),
                                 TextButton.icon(
-                                  onPressed: () => _downloadAndSaveImage(context, url),
-                                  icon: const Icon(Icons.download_rounded, size: 16),
+                                  onPressed: () =>
+                                      _downloadAndSaveImage(context, url),
+                                  icon: const Icon(
+                                    Icons.download_rounded,
+                                    size: 16,
+                                  ),
                                   label: const Text(
                                     "Save",
-                                    style: TextStyle(fontWeight: FontWeight.w800),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -676,9 +735,7 @@ class _NotesTab extends ConsumerWidget {
   void _openFullImage(BuildContext context, String url) {
     if (url.isEmpty) return;
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => _FullImageViewScreen(imageUrl: url),
-      ),
+      MaterialPageRoute(builder: (_) => _FullImageViewScreen(imageUrl: url)),
     );
   }
 
@@ -720,7 +777,8 @@ class _FullImageViewScreen extends StatelessWidget {
                 if (loadingProgress == null) return child;
                 return const CircularProgressIndicator(color: Colors.white);
               },
-              errorBuilder: (_, _, _) => const Icon(Icons.broken_image, color: Colors.white, size: 48),
+              errorBuilder: (_, _, _) =>
+                  const Icon(Icons.broken_image, color: Colors.white, size: 48),
             ),
           ),
         ),
@@ -745,7 +803,9 @@ Future<void> _saveImageFromUrl(BuildContext context, String url) async {
     final permissionOk = await _ensureSavePermission();
     if (!permissionOk && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Media permission denied. Cannot save image.")),
+        const SnackBar(
+          content: Text("Media permission denied. Cannot save image."),
+        ),
       );
       return;
     }
@@ -772,15 +832,15 @@ Future<void> _saveImageFromUrl(BuildContext context, String url) async {
     if (!saved) throw Exception("Save failed");
 
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Image saved to gallery")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Image saved to gallery")));
     }
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Save failed: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Save failed: $e")));
     }
   }
 }
@@ -801,7 +861,8 @@ Future<bool> _ensureSavePermission() async {
     // On Android 10+ gallery save often works without explicit storage permission,
     // but requesting media permission improves behavior on Android 13+.
     final photos = await Permission.photos.request();
-    if (photos.isGranted || photos.isLimited || photos.isRestricted) return true;
+    if (photos.isGranted || photos.isLimited || photos.isRestricted)
+      return true;
     final storage = await Permission.storage.request();
     return storage.isGranted || storage.isLimited || storage.isRestricted;
   }
@@ -815,9 +876,7 @@ Future<bool> _ensureSavePermission() async {
 class _SummaryTab extends StatelessWidget {
   final String summaryMd;
 
-  const _SummaryTab({
-    required this.summaryMd,
-  });
+  const _SummaryTab({required this.summaryMd});
 
   @override
   Widget build(BuildContext context) {
@@ -855,21 +914,449 @@ class _TextCard extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF121117)),
-          ),
-          const SizedBox(height: 12),
-          SelectableText(
-            body,
             style: const TextStyle(
-              color: Color(0xFF656487),
-              height: 1.45,
-              fontWeight: FontWeight.w500,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF121117),
             ),
           ),
+          const SizedBox(height: 12),
+          _StructuredMarkdownView(markdown: body),
         ],
       ),
     );
   }
+}
+
+class _StructuredMarkdownView extends StatelessWidget {
+  final String markdown;
+
+  const _StructuredMarkdownView({required this.markdown});
+
+  static final RegExp _listPattern = RegExp(r'^(?:[-*]|\d+\.)\s+(.+)$');
+  static final RegExp _tableSeparator = RegExp(
+    r'^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final blocks = _buildBlocks(context, markdown);
+    if (blocks.isEmpty) {
+      return const Text(
+        'No content available.',
+        style: TextStyle(
+          color: Color(0xFF656487),
+          height: 1.45,
+          fontWeight: FontWeight.w500,
+        ),
+      );
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: blocks,
+    );
+  }
+
+  List<Widget> _buildBlocks(BuildContext context, String raw) {
+    final lines = raw.replaceAll('\r\n', '\n').split('\n');
+    final blocks = <Widget>[];
+    var i = 0;
+
+    while (i < lines.length) {
+      final trimmed = lines[i].trim();
+      if (trimmed.isEmpty) {
+        i++;
+        continue;
+      }
+      if (_looksLikeTable(lines, i)) {
+        final parsed = _consumeTable(lines, i);
+        blocks.add(_TableBlock(headers: parsed.headers, rows: parsed.rows));
+        blocks.add(const SizedBox(height: 16));
+        i = parsed.nextIndex;
+        continue;
+      }
+      final headingLevel = _headingLevel(trimmed);
+      if (headingLevel != null) {
+        blocks.add(
+          _HeadingText(
+            level: headingLevel,
+            text: trimmed.substring(headingLevel).trim(),
+          ),
+        );
+        blocks.add(const SizedBox(height: 10));
+        i++;
+        continue;
+      }
+      if (_isRule(trimmed)) {
+        blocks.add(
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Divider(height: 1, color: Color(0xFFE9E9F2)),
+          ),
+        );
+        i++;
+        continue;
+      }
+      if (_isListLine(trimmed)) {
+        final items = <_ListItemData>[];
+        while (i < lines.length) {
+          final current = lines[i].trim();
+          if (current.isEmpty ||
+              _looksLikeTable(lines, i) ||
+              _headingLevel(current) != null ||
+              _isRule(current)) {
+            break;
+          }
+          final match = RegExp(
+            r'^(?<marker>(?:[-*]|\d+\.))\s+(?<text>.+)$',
+          ).firstMatch(current);
+          if (match == null) break;
+          final marker = match.namedGroup('marker')!;
+          final buffer = StringBuffer(match.namedGroup('text')!);
+          i++;
+          while (i < lines.length) {
+            final next = lines[i].trim();
+            if (next.isEmpty ||
+                _isListLine(next) ||
+                _looksLikeTable(lines, i) ||
+                _headingLevel(next) != null ||
+                _isRule(next)) {
+              break;
+            }
+            buffer.write(' ');
+            buffer.write(next);
+            i++;
+          }
+          items.add(
+            _ListItemData(marker: marker, text: buffer.toString().trim()),
+          );
+        }
+        blocks.add(_ListBlock(items: items));
+        blocks.add(const SizedBox(height: 16));
+        continue;
+      }
+
+      final paragraph = <String>[];
+      while (i < lines.length) {
+        final current = lines[i].trim();
+        if (current.isEmpty ||
+            _looksLikeTable(lines, i) ||
+            _headingLevel(current) != null ||
+            _isRule(current) ||
+            _isListLine(current)) {
+          break;
+        }
+        paragraph.add(current);
+        i++;
+      }
+      blocks.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 14),
+          child: _InlineMarkdownText(
+            paragraph.join(' '),
+            style: const TextStyle(
+              color: Color(0xFF656487),
+              height: 1.6,
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (blocks.isNotEmpty && blocks.last is SizedBox) {
+      blocks.removeLast();
+    }
+    return blocks;
+  }
+
+  bool _isListLine(String line) => _listPattern.hasMatch(line);
+
+  bool _isRule(String line) {
+    final normalized = line.replaceAll(' ', '');
+    return normalized == '---' || normalized == '***';
+  }
+
+  int? _headingLevel(String line) {
+    if (!line.startsWith('#')) return null;
+    final match = RegExp(r'^(#{1,6})\s+').firstMatch(line);
+    return match == null ? null : match.group(1)!.length;
+  }
+
+  bool _looksLikeTable(List<String> lines, int index) {
+    if (index + 1 >= lines.length) return false;
+    return lines[index].contains('|') &&
+        _tableSeparator.hasMatch(lines[index + 1].trim());
+  }
+
+  _ParsedTable _consumeTable(List<String> lines, int index) {
+    final headers = _splitTableRow(lines[index]);
+    final rows = <List<String>>[];
+    var i = index + 2;
+    while (i < lines.length) {
+      final line = lines[i].trim();
+      if (line.isEmpty || !line.contains('|')) break;
+      rows.add(_splitTableRow(line));
+      i++;
+    }
+    return _ParsedTable(headers: headers, rows: rows, nextIndex: i);
+  }
+
+  List<String> _splitTableRow(String line) {
+    var work = line.trim();
+    if (work.startsWith('|')) work = work.substring(1);
+    if (work.endsWith('|')) work = work.substring(0, work.length - 1);
+    return work.split('|').map((cell) => cell.trim()).toList();
+  }
+}
+
+class _HeadingText extends StatelessWidget {
+  final int level;
+  final String text;
+
+  const _HeadingText({required this.level, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = switch (level) {
+      1 => 22.0,
+      2 => 20.0,
+      3 => 18.0,
+      _ => 16.0,
+    };
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: size,
+        fontWeight: FontWeight.w900,
+        color: const Color(0xFF121117),
+        height: 1.3,
+      ),
+    );
+  }
+}
+
+class _ListBlock extends StatelessWidget {
+  final List<_ListItemData> items;
+
+  const _ListBlock({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: items
+          .map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 28,
+                    alignment: Alignment.topLeft,
+                    child: Text(
+                      item.marker,
+                      style: const TextStyle(
+                        color: AppTheme.primary,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        height: 1.55,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: _InlineMarkdownText(
+                      item.text,
+                      style: const TextStyle(
+                        color: Color(0xFF4E4C67),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _TableBlock extends StatelessWidget {
+  final List<String> headers;
+  final List<List<String>> rows;
+
+  const _TableBlock({required this.headers, required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    if (rows.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F8FC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE7E7F2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.view_stream_rounded,
+                size: 16,
+                color: AppTheme.primary,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Comparison',
+                style: TextStyle(
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.2,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...rows.asMap().entries.map((entry) {
+            final row = entry.value;
+            return Container(
+              width: double.infinity,
+              margin: EdgeInsets.only(
+                bottom: entry.key == rows.length - 1 ? 0 : 10,
+              ),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFE9E9F2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: List.generate(row.length, (i) {
+                  final label =
+                      i < headers.length && headers[i].trim().isNotEmpty
+                      ? headers[i].trim()
+                      : 'Column ${i + 1}';
+                  final value = row[i].trim();
+                  if (value.isEmpty) return const SizedBox.shrink();
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: i == row.length - 1 ? 0 : 8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          label,
+                          style: const TextStyle(
+                            color: Color(0xFF7A7696),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        _InlineMarkdownText(
+                          value,
+                          style: const TextStyle(
+                            color: Color(0xFF26233D),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                            height: 1.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _InlineMarkdownText extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+
+  const _InlineMarkdownText(this.text, {required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      text: TextSpan(style: style, children: _spans(text, style)),
+    );
+  }
+
+  List<InlineSpan> _spans(String raw, TextStyle base) {
+    final cleaned = raw.replaceAll(r'\|', '|');
+    final pattern = RegExp(r'(\*\*[^*]+\*\*|`[^`]+`)');
+    final spans = <InlineSpan>[];
+    var start = 0;
+    for (final match in pattern.allMatches(cleaned)) {
+      if (match.start > start) {
+        spans.add(TextSpan(text: cleaned.substring(start, match.start)));
+      }
+      final token = match.group(0)!;
+      if (token.startsWith('**')) {
+        spans.add(
+          TextSpan(
+            text: token.substring(2, token.length - 2),
+            style: base.copyWith(
+              fontWeight: FontWeight.w900,
+              color: const Color(0xFF232038),
+            ),
+          ),
+        );
+      } else {
+        spans.add(
+          TextSpan(
+            text: token.substring(1, token.length - 1),
+            style: base.copyWith(
+              fontFamily: 'monospace',
+              backgroundColor: const Color(0xFFF1F1F8),
+              color: const Color(0xFF232038),
+            ),
+          ),
+        );
+      }
+      start = match.end;
+    }
+    if (start < cleaned.length) {
+      spans.add(TextSpan(text: cleaned.substring(start)));
+    }
+    return spans;
+  }
+}
+
+class _ListItemData {
+  final String marker;
+  final String text;
+
+  const _ListItemData({required this.marker, required this.text});
+}
+
+class _ParsedTable {
+  final List<String> headers;
+  final List<List<String>> rows;
+  final int nextIndex;
+
+  const _ParsedTable({
+    required this.headers,
+    required this.rows,
+    required this.nextIndex,
+  });
 }
 
 class _AddNotesFooter extends ConsumerWidget {
@@ -886,9 +1373,7 @@ class _AddNotesFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return FutureBuilder<List<dynamic>>(
-      future: Future.wait([
-        ref.read(apiProvider).listStudents(subjectId),
-      ]),
+      future: Future.wait([ref.read(apiProvider).listStudents(subjectId)]),
       builder: (context, snap) {
         var enabled = role == Role.teacher;
         if (!enabled && snap.hasData) {
@@ -914,10 +1399,14 @@ class _AddNotesFooter extends ConsumerWidget {
             width: double.infinity,
             child: FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: enabled ? AppTheme.primary : const Color(0xFFCCCCD6),
+                backgroundColor: enabled
+                    ? AppTheme.primary
+                    : const Color(0xFFCCCCD6),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 elevation: 0,
               ),
               onPressed: enabled
@@ -926,7 +1415,9 @@ class _AddNotesFooter extends ConsumerWidget {
                         context: context,
                         backgroundColor: Colors.white,
                         shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
                         ),
                         builder: (ctx) => _UploadNotesSheet(
                           onPick: (source) async {
@@ -942,7 +1433,10 @@ class _AddNotesFooter extends ConsumerWidget {
                     }
                   : null,
               icon: const Icon(Icons.photo_library_rounded),
-              label: const Text("Add notes", style: TextStyle(fontWeight: FontWeight.w900)),
+              label: const Text(
+                "Add notes",
+                style: TextStyle(fontWeight: FontWeight.w900),
+              ),
             ),
           ),
         );
@@ -983,14 +1477,26 @@ class _UploadNotesSheet extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           ListTile(
-            leading: const Icon(Icons.photo_library_rounded, color: AppTheme.primary),
-            title: const Text('Upload from Gallery', style: TextStyle(fontWeight: FontWeight.w600)),
+            leading: const Icon(
+              Icons.photo_library_rounded,
+              color: AppTheme.primary,
+            ),
+            title: const Text(
+              'Upload from Gallery',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             onTap: () => onPick(ImageSource.gallery),
           ),
           const SizedBox(height: 8),
           ListTile(
-            leading: const Icon(Icons.camera_alt_rounded, color: AppTheme.primary),
-            title: const Text('Take Photo', style: TextStyle(fontWeight: FontWeight.w600)),
+            leading: const Icon(
+              Icons.camera_alt_rounded,
+              color: AppTheme.primary,
+            ),
+            title: const Text(
+              'Take Photo',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             onTap: () => onPick(ImageSource.camera),
           ),
         ],
@@ -1153,7 +1659,9 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
           return _ErrorBody(message: "Quiz data is invalid: $e");
         }
 
-        final questions = (quizObj['questions'] is List) ? (quizObj['questions'] as List) : const [];
+        final questions = (quizObj['questions'] is List)
+            ? (quizObj['questions'] as List)
+            : const [];
         if (questions.isEmpty) {
           return const _TextCard(title: "Quiz", body: "Quiz has no questions.");
         }
@@ -1164,18 +1672,28 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
         Map<String, dynamic>? latestAnswers;
         if (latestAttempt != null) {
           try {
-            latestAnswers = jsonDecode(latestAttempt.answersJson) as Map<String, dynamic>;
+            latestAnswers =
+                jsonDecode(latestAttempt.answersJson) as Map<String, dynamic>;
           } catch (_) {
             latestAnswers = null;
           }
         }
-        final latestAnswersStr = latestAnswers?.map((k, v) => MapEntry(k, (v ?? '').toString()));
+        final latestAnswersStr = latestAnswers?.map(
+          (k, v) => MapEntry(k, (v ?? '').toString()),
+        );
         final mergedAnswers =
-            (_useLastAttemptDefaults && latestAnswersStr != null) ? {...latestAnswersStr, ..._answers} : _answers;
+            (_useLastAttemptDefaults && latestAnswersStr != null)
+            ? {...latestAnswersStr, ..._answers}
+            : _answers;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _QuizOverviewCard(
+              questionCount: questions.length,
+              hasAttempt: latestAttempt != null,
+            ),
+            const SizedBox(height: 14),
             _ScoreBanner(attemptsAsync: attemptsAsync),
             const SizedBox(height: 14),
             ...questions.map((q) {
@@ -1185,11 +1703,25 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
               final prompt = (q['prompt'] ?? '').toString();
 
               if (type == 'mcq') {
-                final options = (q['options'] is List) ? (q['options'] as List).map((e) => e.toString()).toList() : <String>[];
-                final answerIndex = (q['answer_index'] is num) ? (q['answer_index'] as num).toInt() : null;
-                final selected = _normalizeMcqAnswer(mergedAnswers[id], options);
-                final lastSelected = _normalizeMcqAnswer(latestAnswers?[id], options);
-                final showResult = _showResults && latestAttempt != null && lastSelected != null && lastSelected.isNotEmpty;
+                final options = (q['options'] is List)
+                    ? (q['options'] as List).map((e) => e.toString()).toList()
+                    : <String>[];
+                final answerIndex = (q['answer_index'] is num)
+                    ? (q['answer_index'] as num).toInt()
+                    : null;
+                final selected = _normalizeMcqAnswer(
+                  mergedAnswers[id],
+                  options,
+                );
+                final lastSelected = _normalizeMcqAnswer(
+                  latestAnswers?[id],
+                  options,
+                );
+                final showResult =
+                    _showResults &&
+                    latestAttempt != null &&
+                    lastSelected != null &&
+                    lastSelected.isNotEmpty;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 14),
@@ -1212,7 +1744,10 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
               if (type == 'short') {
                 final ideal = (q['ideal_answer'] ?? '').toString();
                 final initial = (mergedAnswers[id] ?? '').toString();
-                final controller = _shortControllers.putIfAbsent(id, () => TextEditingController(text: initial));
+                final controller = _shortControllers.putIfAbsent(
+                  id,
+                  () => TextEditingController(text: initial),
+                );
                 if ((_answers[id] == null) && controller.text != initial) {
                   controller.text = initial;
                 }
@@ -1242,22 +1777,27 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
                     onPressed: _submitting
                         ? null
                         : () => setState(() {
-                              _answers = {};
-                              _useLastAttemptDefaults = false;
-                              _showResults = false;
-                              for (final c in _shortControllers.values) {
-                                c.dispose();
-                              }
-                              _shortControllers.clear();
-                            }),
+                            _answers = {};
+                            _useLastAttemptDefaults = false;
+                            _showResults = false;
+                            for (final c in _shortControllers.values) {
+                              c.dispose();
+                            }
+                            _shortControllers.clear();
+                          }),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       side: const BorderSide(color: Color(0xFFE2E2EC)),
                       foregroundColor: const Color(0xFF121117),
                       backgroundColor: Colors.white,
                     ),
-                    child: const Text("Reset", style: TextStyle(fontWeight: FontWeight.w900)),
+                    child: const Text(
+                      "Reset",
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1268,16 +1808,24 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
                       backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                     icon: _submitting
                         ? const SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.check_rounded),
-                    label: const Text("Submit", style: TextStyle(fontWeight: FontWeight.w900)),
+                    label: const Text(
+                      "Submit",
+                      style: TextStyle(fontWeight: FontWeight.w900),
+                    ),
                   ),
                 ),
               ],
@@ -1291,7 +1839,9 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
   Future<void> _submit(String quizId) async {
     setState(() => _submitting = true);
     try {
-      final attempt = await ref.read(apiProvider).submitQuizAttempt(quizId, answers: _answers);
+      final attempt = await ref
+          .read(apiProvider)
+          .submitQuizAttempt(quizId, answers: _answers);
       ref.invalidate(myQuizAttemptsProvider(quizId));
       if (!mounted) return;
       setState(() {
@@ -1303,9 +1853,9 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Submit failed: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Submit failed: $e")));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -1315,7 +1865,8 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
     final s = (raw ?? '').toString().trim();
     if (s.isEmpty) return null;
     final upper = s.toUpperCase();
-    if (upper == 'A' || upper == 'B' || upper == 'C' || upper == 'D') return upper;
+    if (upper == 'A' || upper == 'B' || upper == 'C' || upper == 'D')
+      return upper;
     if (RegExp(r'^[0-3]$').hasMatch(s)) {
       final i = int.parse(s);
       return String.fromCharCode('A'.codeUnitAt(0) + i);
@@ -1325,6 +1876,86 @@ class _QuizTabState extends ConsumerState<_QuizTab> {
       return String.fromCharCode('A'.codeUnitAt(0) + idx);
     }
     return null;
+  }
+}
+
+class _QuizOverviewCard extends StatelessWidget {
+  final int questionCount;
+  final bool hasAttempt;
+
+  const _QuizOverviewCard({
+    required this.questionCount,
+    required this.hasAttempt,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE6E6F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.quiz_rounded, color: AppTheme.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'QUIZ OVERVIEW',
+                  style: TextStyle(
+                    color: AppTheme.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$questionCount questions, including a short answer section',
+                  style: const TextStyle(
+                    color: Color(0xFF121117),
+                    fontWeight: FontWeight.w800,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: hasAttempt
+                  ? const Color(0xFFD1FAE5)
+                  : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              hasAttempt ? 'Retake' : 'First try',
+              style: TextStyle(
+                color: hasAttempt
+                    ? const Color(0xFF047857)
+                    : const Color(0xFF6B7280),
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -1365,7 +1996,11 @@ class _ScoreBanner extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   score == null ? "Not attempted" : "$score / 100",
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF121117)),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF121117),
+                  ),
                 ),
               ],
             ),
@@ -1379,7 +2014,11 @@ class _ScoreBanner extends StatelessWidget {
               ),
               child: Text(
                 score >= 50 ? "PASSED" : "FAILED",
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1.0),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.0,
+                ),
               ),
             ),
         ],
@@ -1426,9 +2065,14 @@ class _McqCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          _InlineMarkdownText(
             question,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF121117)),
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF121117),
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 12),
           ...List.generate(options.length, (i) {
@@ -1438,10 +2082,13 @@ class _McqCard extends StatelessWidget {
 
             var state = _OptState.normal;
             if (showResult && correctIndex != null) {
-              final correctLetter = String.fromCharCode('A'.codeUnitAt(0) + correctIndex!);
+              final correctLetter = String.fromCharCode(
+                'A'.codeUnitAt(0) + correctIndex!,
+              );
               final user = (lastSelected ?? '').trim();
               if (letter == correctLetter) state = _OptState.correct;
-              if (user == letter && letter != correctLetter) state = _OptState.wrong;
+              if (user == letter && letter != correctLetter)
+                state = _OptState.wrong;
             }
 
             return Padding(
@@ -1480,8 +2127,12 @@ class _OptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color border = selected ? AppTheme.primary.withOpacity(0.45) : const Color(0xFFE6E6F0);
-    Color bg = selected ? AppTheme.primary.withOpacity(0.06) : AppTheme.backgroundLight;
+    Color border = selected
+        ? AppTheme.primary.withOpacity(0.45)
+        : const Color(0xFFE6E6F0);
+    Color bg = selected
+        ? AppTheme.primary.withOpacity(0.06)
+        : AppTheme.backgroundLight;
     Color fg = const Color(0xFF121117);
     IconData? icon;
     Color? iconColor;
@@ -1512,12 +2163,19 @@ class _OptionTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Text(letter, style: TextStyle(fontWeight: FontWeight.w900, color: fg)),
+            Text(
+              letter,
+              style: TextStyle(fontWeight: FontWeight.w900, color: fg),
+            ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
+              child: _InlineMarkdownText(
                 text,
-                style: TextStyle(color: fg, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  color: fg,
+                  fontWeight: FontWeight.w600,
+                  height: 1.45,
+                ),
               ),
             ),
             if (icon != null) Icon(icon, size: 18, color: iconColor),
@@ -1572,9 +2230,14 @@ class _ShortAnswerCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
+          _InlineMarkdownText(
             prompt,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF121117), height: 1.35),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF121117),
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -1584,9 +2247,20 @@ class _ShortAnswerCard extends StatelessWidget {
               hintText: "Type your answer…",
               filled: true,
               fillColor: AppTheme.backgroundLight,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE6E6F0))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: Color(0xFFE6E6F0))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppTheme.primary.withOpacity(0.6))),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE6E6F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFE6E6F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(
+                  color: AppTheme.primary.withOpacity(0.6),
+                ),
+              ),
             ),
             controller: controller,
             onChanged: onChanged,
@@ -1605,7 +2279,11 @@ class _ShortAnswerCard extends StatelessWidget {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.auto_awesome_rounded, size: 16, color: AppTheme.primary),
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 16,
+                        color: AppTheme.primary,
+                      ),
                       SizedBox(width: 6),
                       Text(
                         "IDEAL ANSWER",
@@ -1619,9 +2297,14 @@ class _ShortAnswerCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  Text(
+                  _InlineMarkdownText(
                     idealAnswer.trim(),
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF121117), height: 1.45),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF121117),
+                      height: 1.45,
+                    ),
                   ),
                 ],
               ),
@@ -1646,7 +2329,11 @@ class _PinnedHeader extends SliverPersistentHeaderDelegate {
   double get maxExtent => height;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) => child;
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) => child;
 
   @override
   bool shouldRebuild(covariant _PinnedHeader oldDelegate) {

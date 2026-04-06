@@ -1,0 +1,223 @@
+# Alert Rules for LEXSUM Classroom Application
+# Purpose: Define conditions for alerts based on metrics
+# Documentation: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+
+groups:
+  - name: classroom_application_alerts
+    interval: 30s
+    rules:
+
+      # ============================================================
+      # BACKEND API ALERTS
+      # ============================================================
+      
+      - alert: BackendAPIDown
+        expr: up{job="classroom-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "Backend API is down"
+          description: "Classroom backend API on {{ $labels.instance }} is not responding"
+          runbook_url: "https://wiki.example.com/runbooks/backend-api-down"
+
+      - alert: BackendHighErrorRate
+        expr: 'rate(http_requests_total{job="classroom-backend",status=~"5.."}[5m]) > 0.05'
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High error rate detected"
+          description: "Backend API error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: BackendHighLatency
+        expr: 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="classroom-backend"}[5m])) > 1'
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High API latency detected"
+          description: "Backend API p95 latency is {{ $value | humanizeDuration }} (threshold: 1s)"
+
+      - alert: BackendMemoryUsageHigh
+        expr: 'process_resident_memory_bytes{job="classroom-backend"} / 1024 / 1024 > 500'
+        for: 5m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "High memory usage on backend"
+          description: "Backend memory usage is {{ $value | humanize }}MB (threshold: 500MB)"
+
+      # ============================================================
+      # DATABASE ALERTS
+      # ============================================================
+
+      - alert: PostgreeSQLDown
+        expr: up{job="postgres-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "PostgreSQL on {{ $labels.instance }} is not responding"
+
+      - alert: PostgreSQLHighConnections
+        expr: 'pg_stat_activity_count > 80'
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High database connection count"
+          description: "PostgreSQL has {{ $value }} connections (threshold: 80)"
+
+      - alert: PostgreSQLDiskSpaceLow
+        expr: 'node_filesystem_avail_bytes{mountpoint="/var/lib/postgresql"} / node_filesystem_size_bytes{mountpoint="/var/lib/postgresql"} < 0.1'
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "Database disk space is low"
+          description: "Database disk usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+
+      # ============================================================
+      # REDIS ALERTS
+      # ============================================================
+
+      - alert: RedisDown
+        expr: up{job="redis-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Redis on {{ $labels.instance }} is not responding"
+
+      - alert: RedisMemoryUsageHigh
+        expr: 'redis_memory_used_bytes / redis_memory_max_bytes > 0.9'
+        for: 5m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis memory is {{ $value | humanizePercentage }} full (threshold: 90%)"
+
+      - alert: RedisEvictionsOccurring
+        expr: 'rate(redis_evicted_keys_total[5m]) > 0'
+        for: 5m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Redis is evicting keys"
+          description: "Redis is evicting {{ $value }} keys per second (cache is too small)"
+
+      # ============================================================
+      # SYSTEM ALERTS
+      # ============================================================
+
+      - alert: NodeDown
+        expr: up{job="node-exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Node is down"
+          description: "System node {{ $labels.instance }} is not responding"
+
+      - alert: DiskSpaceLow
+        expr: '(node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10'
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Disk space is low"
+          description: "Disk {{ $labels.device }} has {{ $value | humanize }}% free space"
+
+      - alert: HighCPUUsage
+        expr: '(1 - avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) * 100 > 80'
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage on {{ $labels.instance }} is {{ $value | humanize }}% (threshold: 80%)"
+
+      - alert: HighMemoryUsage
+        expr: '(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80'
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage on {{ $labels.instance }} is {{ $value | humanize }}% (threshold: 80%)"
+
+      - alert: LoadAverageHigh
+        expr: 'node_load5 > 4'
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High load average"
+          description: "5-minute load average on {{ $labels.instance }} is {{ $value | humanize }}"
+
+      # ============================================================
+      # ENDPOINT HEALTH ALERTS
+      # ============================================================
+
+      - alert: EndpointDown
+        expr: 'up{job="blackbox-http"} == 0'
+        for: 2m
+        labels:
+          severity: critical
+          service: endpoint
+        annotations:
+          summary: "Endpoint is down"
+          description: "Endpoint {{ $labels.instance }} is not responding"
+
+      - alert: EndpointSlowResponse
+        expr: 'probe_duration_seconds{job="blackbox-http"} > 2'
+        for: 5m
+        labels:
+          severity: warning
+          service: endpoint
+        annotations:
+          summary: "Endpoint response is slow"
+          description: "Endpoint {{ $labels.instance }} response time is {{ $value | humanizeDuration }}"
+
+      # ============================================================
+      # PROMETHEUS ALERTS
+      # ============================================================
+
+      - alert: PrometheusDown
+        expr: up{job="prometheus"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: monitoring
+        annotations:
+          summary: "Prometheus monitoring is down"
+          description: "Prometheus instance on {{ $labels.instance }} is not responding"
+
+      - alert: PrometheusHighMemory
+        expr: 'process_resident_memory_bytes{job="prometheus"} / 1024 / 1024 > 1024'
+        for: 5m
+        labels:
+          severity: warning
+          service: monitoring
+        annotations:
+          summary: "Prometheus high memory usage"
+          description: "Prometheus memory usage is {{ $value | humanize }}MB"

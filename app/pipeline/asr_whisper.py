@@ -48,10 +48,14 @@ def _get_transformers_asr(model_name: str):
         return _TF_CACHE[model_name]
     from transformers import pipeline  # type: ignore
 
+    # Enable chunked Whisper inference so recordings longer than ~30s can be
+    # transcribed without triggering long-form generation errors.
     asr = pipeline(
         "automatic-speech-recognition",
         model=model_name,
         device_map="auto",
+        chunk_length_s=30,
+        stride_length_s=5,
     )
     _TF_CACHE[model_name] = asr
     return asr
@@ -126,7 +130,7 @@ def transcribe_audio_bytes(audio_bytes: bytes, model_name: str, input_name: str 
         # 2) Fallback: transformers whisper
         asr = _get_transformers_asr(model_name)
         try:
-            out = asr(path)
+            out = asr(path, return_timestamps=True)
         except Exception as e:
             if ffmpeg_error:
                 raise RuntimeError(f"ASR decode failed (ffmpeg_convert_error={ffmpeg_error})") from e

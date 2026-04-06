@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'dart:async';
-import 'dart:io';
 import '../widgets/lectures_skeleton.dart';
 
 import '../core/theme.dart';

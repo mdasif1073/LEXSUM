@@ -1,0 +1,56 @@
+[Unit]
+Description=LEXSUM Classroom Backend API Service
+Documentation=https://wiki.example.com/lexsum/backend
+After=network-online.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/classroom-app/backend
+
+# Environment variables
+EnvironmentFile=/opt/classroom-app/backend/.env
+Environment="PYTHONUNBUFFERED=1"
+Environment="PATH=/opt/classroom-app/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Startup command
+ExecStartPre=/bin/sh -c 'mkdir -p /var/run/classroom-backend && chown www-data:www-data /var/run/classroom-backend'
+ExecStart=/opt/classroom-app/backend/venv/bin/uvicorn app.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 4 \
+    --log-level info \
+    --access-log \
+    --reload \
+    --reload-exclude "*/venv/*" \
+    --reload-exclude "*/__pycache__/*" \
+    --reload-exclude "*.pyc" \
+    --reload-exclude "*.pyo"
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+MaxStartupTime=30
+
+# Resource limits
+LimitNOFILE=65535
+LimitNPROC=65535
+MemoryLimit=1G
+CPUQuota=80%
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/classroom-app/backend/logs /var/run/classroom-backend
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=classroom-backend
+
+[Install]
+WantedBy=multi-user.target

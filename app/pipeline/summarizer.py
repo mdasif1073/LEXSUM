@@ -60,7 +60,10 @@ Task:
 Convert the transcript into detailed, structured Markdown notes.
 
 Rules:
-- Use headings, bullet points, definitions, examples, steps, formulas if present.
+- Use short mobile-friendly Markdown sections and bullet points.
+- Prefer headings, bullet points, definitions, examples, steps, and formulas if present.
+- Do NOT use markdown tables.
+- For comparisons, use labeled bullet lists instead of table format.
 - Keep it readable and complete ("what teacher taught").
 - Do NOT invent content.
 - If the transcript is messy (Thanglish, code-switching), infer meaning but stay faithful.
@@ -83,6 +86,9 @@ Write a short, high-quality Markdown summary (5–10 bullets max) from the lectu
 
 Rules:
 - Focus on key concepts, takeaways, and what was covered.
+- Keep it concise and easy to scan on mobile.
+- Use short bullets and mini-sections only.
+- Do NOT use markdown tables.
 - Do NOT invent.
 
 Lecture notes:

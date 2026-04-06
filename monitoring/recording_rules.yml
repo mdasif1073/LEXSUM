@@ -1,0 +1,135 @@
+# Recording Rules for LEXSUM Classroom Application
+# Purpose: Pre-compute frequently used metric queries for better performance
+# Documentation: https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/
+
+groups:
+  - name: classroom_recording_rules
+    interval: 30s
+    rules:
+
+      # ============================================================
+      # HTTP REQUEST METRICS
+      # ============================================================
+
+      - record: 'http:requests_per_second:1m'
+        expr: 'rate(http_requests_total[1m])'
+
+      - record: 'http:error_rate:1m'
+        expr: 'rate(http_requests_total{status=~"5.."}[1m]) / rate(http_requests_total[1m])'
+
+      - record: 'http:latency:p50:1m'
+        expr: 'histogram_quantile(0.50, rate(http_request_duration_seconds_bucket[1m]))'
+
+      - record: 'http:latency:p95:1m'
+        expr: 'histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[1m]))'
+
+      - record: 'http:latency:p99:1m'
+        expr: 'histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[1m]))'
+
+      # ============================================================
+      # DATABASE METRICS
+      # ============================================================
+
+      - record: 'db:connections_used_ratio'
+        expr: 'pg_stat_activity_count / pg_settings_max_connections'
+
+      - record: 'db:cache_hit_ratio:1m'
+        expr: 'rate(pg_stat_database_heap_blks_hit[1m]) / (rate(pg_stat_database_heap_blks_hit[1m]) + rate(pg_stat_database_heap_blks_read[1m]))'
+
+      - record: 'db:table_size_bytes'
+        expr: 'pg_total_relation_size'
+
+      - record: 'db:index_size_bytes'
+        expr: 'pg_relation_size'
+
+      # ============================================================
+      # REDIS METRICS
+      # ============================================================
+
+      - record: 'redis:memory_used_ratio'
+        expr: 'redis_memory_used_bytes / redis_memory_max_bytes'
+
+      - record: 'redis:evictions_per_second:1m'
+        expr: 'rate(redis_evicted_keys_total[1m])'
+
+      - record: 'redis:hits_per_second:1m'
+        expr: 'rate(redis_keyspace_hits_total[1m])'
+
+      - record: 'redis:misses_per_second:1m'
+        expr: 'rate(redis_keyspace_misses_total[1m])'
+
+      - record: 'redis:hit_rate:1m'
+        expr: 'rate(redis_keyspace_hits_total[1m]) / (rate(redis_keyspace_hits_total[1m]) + rate(redis_keyspace_misses_total[1m]))'
+
+      # ============================================================
+      # SYSTEM METRICS
+      # ============================================================
+
+      - record: 'node:cpu_usage_ratio:1m'
+        expr: '1 - avg(rate(node_cpu_seconds_total{mode="idle"}[1m])) by (instance)'
+
+      - record: 'node:memory_used_ratio'
+        expr: '1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)'
+
+      - record: 'node:disk_used_ratio'
+        expr: '1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)'
+
+      - record: 'node:disk_io_read_bytes:1m'
+        expr: 'rate(node_disk_read_bytes_total[1m])'
+
+      - record: 'node:disk_io_write_bytes:1m'
+        expr: 'rate(node_disk_written_bytes_total[1m])'
+
+      - record: 'node:network_receive_bytes:1m'
+        expr: 'rate(node_network_receive_bytes_total[1m])'
+
+      - record: 'node:network_transmit_bytes:1m'
+        expr: 'rate(node_network_transmit_bytes_total[1m])'
+
+      # ============================================================
+      # APPLICATION BUSINESS METRICS
+      # ============================================================
+
+      - record: 'app:active_users:1m'
+        expr: 'count(increase(user_session_total[1m]) > 0)'
+
+      - record: 'app:lectures_processed:1m'
+        expr: 'rate(lectures_processed_total[1m])'
+
+      - record: 'app:quiz_generations:1m'
+        expr: 'rate(quiz_generated_total[1m])'
+
+      - record: 'app:transcriptions:1m'
+        expr: 'rate(transcription_completed_total[1m])'
+
+      - record: 'app:api_success_rate:1m'
+        expr: 'rate(http_requests_total{status=~"2.."}[1m]) / rate(http_requests_total[1m])'
+
+      # ============================================================
+      # COMPOSITE HEALTH METRICS
+      # ============================================================
+
+      - record: 'health:service_availability:5m'
+        expr: '100 * avg(up == 1) by (job)'
+
+      - record: 'health:system_health_score:5m'
+        expr: |
+          (
+            (100 * avg(up{job=~"classroom-backend|postgres-exporter|redis-exporter"})) +
+            (100 * (1 - avg(node:cpu_usage_ratio:1m))) +
+            (100 * (1 - avg(node:memory_used_ratio))) +
+            (100 * http:requests_per_second:1m / 100)
+          ) / 4
+
+      # ============================================================
+      # REQUEST BREAKDOWN BY ENDPOINT
+      # ============================================================
+
+      - record: 'http:requests_by_endpoint:1m'
+        expr: 'sum by (endpoint) (rate(http_requests_total[1m]))'
+
+      - record: 'http:errors_by_endpoint:1m'
+        expr: 'sum by (endpoint) (rate(http_requests_total{status=~"5.."}[1m]))'
+
+      - record: 'http:latency_by_endpoint:p95:1m'
+        expr: 'histogram_quantile(0.95, sum by (endpoint, le) (rate(http_request_duration_seconds_bucket[1m])))'

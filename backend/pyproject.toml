@@ -30,6 +30,11 @@ dependencies = [
   "accelerate>=0.33.0",
   "sentencepiece>=0.2.0",
   "faster-whisper>=1.0.3",
+
+  # DevOps dependencies (for CI/CD pipeline)
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "safety>=2.3.0",
 ]
 
 [tool.ruff]

@@ -1,0 +1,51 @@
+[Unit]
+Description=LEXSUM Classroom Background Worker Service
+Documentation=https://wiki.example.com/lexsum/worker
+After=network-online.target redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/classroom-app/backend
+
+# Environment variables
+EnvironmentFile=/opt/classroom-app/backend/.env
+Environment="PYTHONUNBUFFERED=1"
+Environment="PATH=/opt/classroom-app/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
+
+# Startup command
+ExecStart=/opt/classroom-app/backend/venv/bin/python modal_worker.py
+
+# Restart policy (more aggressive for workers)
+Restart=on-failure
+RestartSec=10s
+MaxStartupTime=30
+StartLimitInterval=5m
+StartLimitBurst=5
+
+# Resource limits (workers can use more resources due to ML tasks)
+LimitNOFILE=65535
+LimitNPROC=65535
+MemoryLimit=3G
+CPUQuota=90%
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/classroom-app/backend/logs /tmp /var/tmp
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=classroom-worker
+
+# Graceful shutdown
+TimeoutStopSec=30
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target
