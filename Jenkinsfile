@@ -9,7 +9,6 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '15'))
         timeout(time: 1, unit: 'HOURS')
-        timestamps()
     }
 
     environment {
@@ -103,14 +102,14 @@ pipeline {
             post {
                 always {
                     junit 'backend/test-results.xml' || true
-                    publishHTML([
+                    publishHTML(target: [
                         allowMissing: false,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
                         reportDir: 'backend/htmlcov',
                         reportFiles: 'index.html',
                         reportName: 'Backend Coverage Report'
-                    ]) || true
+                    ])
                 }
             }
         }
@@ -153,14 +152,14 @@ pipeline {
             }
             post {
                 always {
-                    publishHTML([
+                    publishHTML(target: [
                         allowMissing: true,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
                         reportDir: 'coverage/html',
                         reportFiles: 'index.html',
                         reportName: 'Flutter Coverage Report'
-                    ]) || true
+                    ])
                 }
             }
         }
