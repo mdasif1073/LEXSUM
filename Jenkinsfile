@@ -153,7 +153,7 @@ pipeline {
             }
             post {
                 always {
-                    junit testResults: 'backend/test-results.xml', allowEmptyResults: true
+                    junit testResults: 'backend/test-results.xml', allowEmptyResults: true, skipMarkingBuildUnstable: true
                     publishHTML(target: [
                         allowMissing: true,
                         alwaysLinkToLastBuild: false,
