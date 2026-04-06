@@ -137,6 +137,16 @@ pipeline {
                 sh '''
                     cd backend
                     source ${VIRTUAL_ENV}/bin/activate
+
+                    # Jenkins workspace may not contain local untracked .env.
+                    # Load it when present; otherwise use a CI-safe fallback.
+                    if [ -f .env ]; then
+                        set -a
+                        . ./.env
+                        set +a
+                    fi
+                    export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg://postgres:postgres@localhost:5432/postgres}"
+
                     pytest tests/ -v --cov=app --cov-report=xml --cov-report=html --tb=short --junit-xml=test-results.xml || true
                     echo "✅ Backend tests complete (failures non-blocking)"
                 '''
@@ -227,7 +237,8 @@ pipeline {
                 sh '''
                     cd backend
                     source ${VIRTUAL_ENV}/bin/activate
-                    python setup.py sdist bdist_wheel
+                    python -m pip install --upgrade build
+                    python -m build
                     
                     mkdir -p ../${ARTIFACT_DIR}/backend
                     cp dist/* ../${ARTIFACT_DIR}/backend/ || true
