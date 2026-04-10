@@ -193,11 +193,6 @@ pipeline {
                         allowMissing: true,
                         alwaysLinkToLastBuild: false,
                         keepAll: true,
-                        reportDir: 'backend/htmlcov',
-                        reportFiles: 'index.html',
-                        reportName: 'Backend Coverage Report'
-                    ])
-                }
             }
         }
 
@@ -431,11 +426,6 @@ pipeline {
                 cat ${ARTIFACT_DIR}/reports/pipeline-info.txt
             '''
             deleteDir()
-        }
-        success {
-            echo "════════════════════════════════════════════════════════"
-            echo "✅ PIPELINE SUCCEEDED - All stages completed successfully"
-            echo "════════════════════════════════════════════════════════"
         }
         failure {
             echo "════════════════════════════════════════════════════════"
