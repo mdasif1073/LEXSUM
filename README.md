@@ -84,8 +84,12 @@ The project includes a complete Jenkins pipeline for:
 1. Install Jenkins on a server
 2. Create a new pipeline job
 3. Use the `Jenkinsfile` in the repository root
-4. Configure SSH credentials for deployment servers
-5. Set up GitHub webhooks for automatic builds
+4. Configure the GitHub plugin in Jenkins so it can publish commit status back to GitHub
+5. Set up the repository webhook to `https://<your-jenkins>/github-webhook/`
+6. Make sure the job watches both `main` and `develop` branches, or use a multibranch pipeline
+7. Configure SSH credentials for deployment servers
+
+With that setup, pushes to GitHub should trigger Jenkins automatically and GitHub should show the green checkmark when the Jenkins commit status is reported as `SUCCESS`.
 
 ## Monitoring
 

@@ -3,6 +3,38 @@
 // Author: DevOps Team
 // Last Updated: 2024
 
+def githubCommitContext = 'ci/jenkins/lexsum'
+
+def getRepoUrl() {
+    return sh(script: 'git config --get remote.origin.url', returnStdout: true).trim()
+}
+
+def getCommitSha() {
+    return sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+}
+
+def publishGithubStatus(String state, String message) {
+    try {
+        step([
+            $class: 'GitHubCommitStatusSetter',
+            reposSource: [$class: 'ManuallyEnteredRepositorySource', url: getRepoUrl()],
+            commitShaSource: [$class: 'ManuallyEnteredShaSource', sha: getCommitSha()],
+            contextSource: [$class: 'ManuallyEnteredCommitContextSource', context: githubCommitContext],
+            errorHandlers: [[$class: 'ShallowAnyErrorHandler']],
+            statusResultSource: [
+                $class: 'ConditionalStatusResultSource',
+                results: [[
+                    $class: 'AnyBuildResult',
+                    state: state,
+                    message: message
+                ]]
+            ]
+        ])
+    } catch (err) {
+        echo "⚠️ GitHub status update skipped: ${err.message}"
+    }
+}
+
 pipeline {
     agent any
 
@@ -34,6 +66,9 @@ pipeline {
                 echo "STAGE 1: CODE CHECKOUT - Retrieving source from repository"
                 echo "════════════════════════════════════════════════════════"
                 checkout scm
+                script {
+                    publishGithubStatus('PENDING', 'Jenkins build started')
+                }
                 sh '''
                     echo "Repository Information:"
                     git log --oneline -10
@@ -406,11 +441,25 @@ pipeline {
             echo "════════════════════════════════════════════════════════"
             echo "❌ PIPELINE FAILED - Check logs for failure details"
             echo "════════════════════════════════════════════════════════"
+            script {
+                publishGithubStatus('FAILURE', 'Build failed')
+            }
         }
         unstable {
             echo "════════════════════════════════════════════════════════"
             echo "⚠️ PIPELINE UNSTABLE - Some tests or checks failed"
             echo "════════════════════════════════════════════════════════"
+            script {
+                publishGithubStatus('FAILURE', 'Build unstable')
+            }
+        }
+        success {
+            echo "════════════════════════════════════════════════════════"
+            echo "✅ PIPELINE SUCCEEDED - All stages completed successfully"
+            echo "════════════════════════════════════════════════════════"
+            script {
+                publishGithubStatus('SUCCESS', 'Build passed')
+            }
         }
     }
 }
