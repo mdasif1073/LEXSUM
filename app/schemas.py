@@ -1,6 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, EmailStr
 import json
+from typing import Literal
 
 
 # =========================
@@ -10,6 +11,7 @@ class RegisterIn(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     password: str = Field(min_length=6)
+    role: Literal["teacher", "student"] = "teacher"
 
 
 class RegisterSimple(BaseModel):

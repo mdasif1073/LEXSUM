@@ -1,13 +1,18 @@
+import os
+
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app
-from app.config import settings
-from app.db import Base, engine
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Test database URL
+# Force test database before importing application modules that initialize DB engine.
 TEST_DATABASE_URL = "sqlite:///./test.db"
+os.environ["DATABASE_URL"] = TEST_DATABASE_URL
+os.environ.setdefault("APP_ENV", "test")
+
+from app.config import settings
+from app.db import Base, get_db
+from app.main import app
 
 # Create test engine
 test_engine = create_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
@@ -31,8 +36,23 @@ def client():
     settings.DATABASE_URL = TEST_DATABASE_URL
     settings.REDIS_URL = "redis://localhost:6379/0"  # Mock if needed
 
+    # Create schema once for API tests using the overridden DB dependency.
+    Base.metadata.create_all(bind=test_engine)
+
+    def override_get_db():
+        db = TestingSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
+
     with TestClient(app) as c:
         yield c
+
+    app.dependency_overrides.clear()
+    Base.metadata.drop_all(bind=test_engine)
 
 def test_health_endpoint(client):
     response = client.get("/health")
@@ -46,10 +66,10 @@ def test_auth_endpoints(client):
         "email": "test@example.com",
         "password": "password123"
     })
-    assert response.status_code == 201
+    assert response.status_code == 200
 
     # Test login
-    response = client.post("/auth/login", json={
+    response = client.post("/auth/login/json", json={
         "email": "test@example.com",
         "password": "password123"
     })
@@ -65,7 +85,7 @@ def test_subjects_endpoints(client):
         "email": "teacher@example.com",
         "password": "password123"
     })
-    login_response = client.post("/auth/login", json={
+    login_response = client.post("/auth/login/json", json={
         "email": "teacher@example.com",
         "password": "password123"
     })
@@ -77,7 +97,7 @@ def test_subjects_endpoints(client):
         "name": "Test Subject",
         "description": "A test subject"
     }, headers=headers)
-    assert response.status_code == 201
+    assert response.status_code == 200
     subject_data = response.json()
     assert subject_data["name"] == "Test Subject"
 

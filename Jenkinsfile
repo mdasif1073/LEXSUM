@@ -145,7 +145,7 @@ pipeline {
                         . ./.env
                         set +a
                     fi
-                    export DATABASE_URL="${DATABASE_URL:-postgresql+psycopg://postgres:postgres@localhost:5432/postgres}"
+                    export DATABASE_URL="${DATABASE_URL:-sqlite:///./ci_test.db}"
 
                     pytest tests/ -v --cov=app --cov-report=xml --cov-report=html --tb=short --junit-xml=test-results.xml || true
                     echo "✅ Backend tests complete (failures non-blocking)"
